@@ -1,0 +1,76 @@
+name: Promote staging to production
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: staging-to-main-promotion
+  cancel-in-progress: false
+
+jobs:
+  open-promotion-pr:
+    name: Open or reuse staging to main PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create or reuse the production promotion PR
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "::error::Run this workflow from the main branch."
+            exit 1
+          fi
+
+          existing_pr="$(gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head staging \
+            --state open \
+            --json url \
+            --jq '.[0].url // empty')"
+
+          if [[ -n "$existing_pr" ]]; then
+            echo "An open staging-to-main PR already exists: $existing_pr"
+            {
+              echo "## Production promotion PR"
+              echo "Reused existing PR: $existing_pr"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          ahead_by="$(gh api "repos/${GITHUB_REPOSITORY}/compare/main...staging" --jq '.ahead_by')"
+          if [[ "$ahead_by" -eq 0 ]]; then
+            echo "staging has no commits ahead of main; no promotion PR is needed."
+            echo "staging has no commits ahead of main; no promotion PR was created." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          body="$(cat <<'EOF'
+          This PR promotes the changes currently on `staging` to `main`.
+
+          Before merging, review the complete diff and verify the shared preview at https://2flygarecalender-pre.vercel.app.
+
+          Merging this PR triggers the Vercel Production deployment. This workflow only creates or reuses the PR; it never merges it.
+          EOF
+          )"
+
+          pr_url="$(gh pr create \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head staging \
+            --title "Release staging to production" \
+            --body "$body")"
+
+          echo "Created production promotion PR: $pr_url"
+          {
+            echo "## Production promotion PR"
+            echo "Created PR: $pr_url"
+            echo "Review and merge it manually after approving the release."
+          } >> "$GITHUB_STEP_SUMMARY"
