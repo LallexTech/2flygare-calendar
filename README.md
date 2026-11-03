@@ -4,6 +4,8 @@ Java 21 / Spring Boot 4, Thymeleaf, JavaScript and a vis-timeline resource plann
 
 Stable address: **https://2flygarecalender.vercel.app**.
 
+For the durable architecture and deployment context used by contributors and coding agents, see [AGENTS.md](AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Sign in with Google
 
 Open the stable address and choose **Fortsätt med Google**. Sign in with a verified Gmail or Google Workspace account. No email link or separate application password is needed. Google controls its own sign-in challenges; this application does not add a separate 2FA enrollment step.
@@ -89,14 +91,14 @@ Vercel creates separate deployments for Preview and Production. Preview is for r
 
 Current state (2026-11-03):
 
-- `https://2flygarecalender-pre.vercel.app` points to the current **Preview** deployment and has a Vercel Deployment Protection exception, so visitors reach the app's Google sign-in directly. Other generated Preview URLs remain protected. The project is deployed manually from the CLI rather than from a connected Git branch, so update this alias after each new Preview deployment with `npx.cmd vercel alias set <preview-deployment-url> 2flygarecalender-pre.vercel.app --scope alexsjogren-7420s-projects`; the exception is attached to the stable alias and remains in place.
+- `https://2flygarecalender-pre.vercel.app` is assigned to the Git branch `staging` and follows that branch's latest **Preview** deployment. The `2flygare` Vercel project is connected to `LallexTech/2flygare-calendar`; pushes to non-production branches create Preview deployments, while changes merged to `main` create Production deployments. The stable `-pre` alias has a Vercel Deployment Protection exception, so visitors reach the app's Google sign-in directly. Other generated Preview URLs remain protected.
 - `https://2flygarecalender.vercel.app` is a project domain assigned to **Production**. It follows the latest Production deployment and sends visitors directly to the app's Google sign-in; no Vercel sign-in gate is shown there.
 - The older `https://2flygare.vercel.app` remains Vercel's default Production domain. The preferred user-facing Production address is `2flygarecalender.vercel.app`.
 - A new Production deployment was published on 2026-11-03. Its startup migration succeeded against the separate Neon `production` branch. Production and Preview data remain isolated.
 - The team remains on the Hobby plan for the owner's private evaluation. Revisit the Vercel plan before using the app for ongoing company operations or adding employees; Vercel's Hobby use is limited to non-commercial personal projects.
 - Vercel Deployment Protection and application sign-in are separate. The two stable domains bypass Vercel's login and use the app's Google OAuth, account approval, and role checks. Random Preview deployment URLs remain behind Vercel Authentication. Unapproved registrations stay pending.
 
-The Google OAuth client callback is `https://2flygarecalender.vercel.app/login/oauth2/code/google`. The Production hostname is assigned at the project level so it follows future Production deployments automatically. Preview deployments get unique generated Vercel URLs; the stable `-pre` alias must be moved to the latest Preview deployment after each manual Preview deploy.
+The Google OAuth client callback is `https://2flygarecalender.vercel.app/login/oauth2/code/google`. The Production hostname follows the latest Production deployment. Feature branches and pull requests get their own generated Preview URLs; the stable `-pre` alias follows `staging` automatically after a Git-triggered deployment.
 
 Vercel does not copy Preview variables into Production automatically. Production has its own Google client settings, independent Neon branch connection, `APP_BASE_URL`, `SPRING_PROFILES_ACTIVE=vercel`, `PORT=8080`, and Alexander's known bootstrap email. Only Alexander's email is currently configured; do not invent Tobias's or Tony's email addresses. They can be added after their real Google addresses are supplied.
 
