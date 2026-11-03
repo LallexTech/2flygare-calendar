@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "Två Flygare Bygg",
+  "short_name": "TF Bygg",
+  "lang": "sv",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8efe9",
+  "theme_color": "#0d6b36",
+  "related_applications": [
+    { "platform": "webapp", "url": "/manifest.webmanifest", "id": "https://2flygarecalender.vercel.app/" }
+  ],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,48 @@
+spring:
+  datasource:
+    url: ${DATABASE_JDBC_URL:${DATABASE_URL}}
+    username: ${DATABASE_USERNAME:${PGUSER:}}
+    password: ${DATABASE_PASSWORD:${PGPASSWORD:}}
+    hikari:
+      maximum-pool-size: 4
+      minimum-idle: 0
+      connection-timeout: 10000
+  session:
+    jdbc:
+      initialize-schema: never
+      cleanup-cron: "-"
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: none
+  servlet:
+    session:
+      timeout: 30m
+      tracking-modes: cookie
+      cookie:
+        http-only: true
+        secure: true
+        same-site: lax
+  error:
+    include-message: never
+    include-stacktrace: never
+app:
+  google-login: ${GOOGLE_LOGIN_ENABLED:false}
+  base-url: ${APP_BASE_URL:https://${VERCEL_URL}}
+  mail-from: ${MAIL_FROM:}
+  neon-auth-base-url: ${NEON_AUTH_BASE_URL:${AUTH_NEON_AUTH_BASE_URL:}}
+  bootstrap:
+    tobias-email: ${INITIAL_ADMIN_TOBIAS_EMAIL:}
+    tony-email: ${INITIAL_ADMIN_TONY_EMAIL:}
+    alexander-email: ${INITIAL_ADMIN_ALEXANDER_EMAIL:}

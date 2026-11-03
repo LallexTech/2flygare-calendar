@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><th:block th:replace="~{fragments/icons :: icons}"></th:block><title>Confirm sign-in · Flygare</title><link rel="stylesheet" href="/style.css"></head>
+<body><main class="narrow"><p class="eyebrow">FLYGARE</p><h1>Confirm your sign-in</h1>
+<p>Continue only if you requested this email link for your own account.</p>
+<form th:if="${!token.isEmpty()}" th:action="@{/login/consume}" method="post"><input type="hidden" name="token" th:value="${token}"><button type="submit">Confirm and sign in</button></form>
+<p th:if="${token.isEmpty()}">This link is invalid. <a href="/login">Request a new link</a>.</p></main></body></html>

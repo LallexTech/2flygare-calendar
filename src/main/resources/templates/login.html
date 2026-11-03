@@ -1,0 +1,5 @@
+<!doctype html>
+<html lang="sv" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><th:block th:replace="~{fragments/icons :: icons}"></th:block><title>Logga in · 2 Flygare</title><link rel="stylesheet" href="/style.css"><script src="/install.js" defer></script></head>
+<body><main class="narrow"><img src="/icons/icon-192.png" alt="TF Bygg" width="96" height="96"><h1>2 Flygare Kalender</h1><p>Planera projekt, personal och arbetstid tillsammans.</p>
+<p class="notice" th:if="${param.invalid}">Det gick inte att logga in. Använd ett verifierat Gmail- eller Google Workspace-konto och försök igen.</p><p class="notice" th:if="${param.logout}">Du är utloggad.</p>
+<form th:if="${legacyTestLogin}" th:action="@{/login/link}" method="post"><input name="username" type="email"><button>Test sign in</button></form><a href="/oauth2/authorization/google">Fortsätt med Google</a><p class="muted">Nya användare behöver godkännas av en administratör innan de får tillgång till planeringen.</p><button data-install-app>Lägg till på hemskärmen</button></main></body></html>

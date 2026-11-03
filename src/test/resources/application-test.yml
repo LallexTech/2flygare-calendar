@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:flygare;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=10000
+    username: sa
+    password: ""
+  mail:
+    host: localhost
+    username: ""
+    password: ""
+app:
+  legacy-test-login: true
+  base-url: https://flygare.test
+  mail-from: mail@flygare.test
+  bootstrap:
+    tobias-email: tobias@bootstrap.test
+    tony-email: tony@bootstrap.test
+    alexander-email: alexander@bootstrap.test

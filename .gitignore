@@ -1,0 +1,16 @@
+/target/
+/.idea/
+/.data/
+.env
+.env.*
+!.env.example
+/.vercel/
+/.codex/
+/.agents/
+*.log
+/node_modules/
+/src/main/resources/static/planner/
+/playwright-report/
+/test-results/
+
+.env*

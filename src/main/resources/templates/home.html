@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><th:block th:replace="~{fragments/icons :: icons}"></th:block><title>Flygare</title><link rel="stylesheet" href="/style.css"></head>
+<body><main class="narrow"><p class="eyebrow">FLYGARE</p><h1 th:text="${account.displayName().isEmpty() ? 'Welcome' : account.displayName()}"></h1>
+<p th:text="${account.email()}"></p><p th:if="${account.developer()}" class="badge">Developer · Technical maintainer</p>
+<p class="notice" th:unless="${account.approved()}">Your registration is PENDING. An administrator must approve it before you can access the application.</p>
+<p th:if="${account.approved()}"><a class="button" href="/app">View activities</a></p>
+<p th:if="${account.admin()}"><a class="button" href="/admin">Administration dashboard</a></p>
+<form th:action="@{/logout}" method="post"><button class="secondary">Sign out</button></form></main></body></html>

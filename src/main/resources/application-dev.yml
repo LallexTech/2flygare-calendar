@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./.data/flygare;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password: ""
+  mail:
+    host: localhost
+    port: 1025
+    username: ""
+    password: ""
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+      mail.smtp.starttls.required: false
+server:
+  address: 127.0.0.1
+  servlet.session.cookie.secure: false
+app:
+  base-url: http://localhost:8080

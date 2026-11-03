@@ -1,0 +1,9 @@
+# Enable only when all requests enter through Vercel's trusted proxy.
+# Vercel overwrites X-Forwarded-For; Spring then exposes the original client IP/protocol.
+server:
+  address: 0.0.0.0
+  forward-headers-strategy: framework
+  shutdown: graceful
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
