@@ -1,0 +1,22 @@
+/* Also mark native dialogs, which render above the document's stacking contexts. */
+body::after,
+dialog[open]::after {
+    content: "DEV";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-25deg);
+    z-index: 2147483647;
+    color: rgb(180 55 35 / 13%);
+    font: 900 clamp(80px, 24vmin, 240px) / 1 Arial, sans-serif;
+    letter-spacing: 0.12em;
+    pointer-events: none;
+    user-select: none;
+}
+
+@media print {
+    body::after,
+    dialog[open]::after {
+        display: none;
+    }
+}
