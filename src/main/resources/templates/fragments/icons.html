@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
 <th:block th:fragment="icons">
+<link th:if="${developmentEnvironment}" rel="stylesheet" href="/environment.css">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
