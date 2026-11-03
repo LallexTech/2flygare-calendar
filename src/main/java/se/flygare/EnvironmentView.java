@@ -9,11 +9,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class EnvironmentView {
     private final boolean development;
 
-    public EnvironmentView(@Value("${APP_ENVIRONMENT:production}") String environment,
-                           @Value("${VERCEL_ENV:}") String vercelEnvironment) {
-        development = !"production".equalsIgnoreCase(vercelEnvironment.strip())
-                && ("preview".equalsIgnoreCase(environment.strip())
-                    || "development".equalsIgnoreCase(environment.strip()));
+    public EnvironmentView(@Value("${VERCEL_ENV:production}") String environment) {
+        development = "preview".equalsIgnoreCase(environment.strip())
+                || "development".equalsIgnoreCase(environment.strip());
     }
 
     @ModelAttribute("developmentEnvironment")

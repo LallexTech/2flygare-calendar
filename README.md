@@ -89,7 +89,7 @@ There is a second, older Neon resource named `2flygare-signin-preview` for Neon 
 
 ### Preview and Production
 
-Preview and Development use `APP_ENVIRONMENT=preview` or `APP_ENVIRONMENT=development` to show a translucent DEV watermark across all application pages and dialogs. The watermark does not intercept clicks. Set this variable only in the matching Vercel scopes; local Spring Boot runs must load it explicitly. An unset value defaults to production, and `VERCEL_ENV=production` always disables the watermark. Production does not include the watermark stylesheet in its pages.
+Preview and Development automatically show a translucent DEV watermark across all application pages and dialogs using Vercel's existing `VERCEL_ENV` system variable. The watermark does not intercept clicks. Production and an unset environment never include the watermark stylesheet. Local development can opt in by explicitly setting `VERCEL_ENV=development`.
 
 Vercel creates separate deployments for Preview and Production. Preview is for review and uses Preview-scoped environment variables; Production is the user-facing deployment and uses Production-scoped values. An alias is only a hostname mapping: it does not change a deployment's target or its environment.
 
