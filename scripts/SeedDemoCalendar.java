@@ -5,6 +5,7 @@ import java.util.*;
 /** Explicit, transactional demo-data import. Never creates login accounts or roles. */
 class SeedDemoCalendar {
     private static final ZoneId ZONE = ZoneId.of("Europe/Stockholm");
+    private static final List<String> EMPLOYEE_COLORS = List.of("#2563EB", "#0F766E", "#7C3AED", "#B45309", "#BE123C");
     private record Project(String name, String town, List<String> people, List<String> tasks) { }
     private record Booking(int project, String name, String description, LocalDate date, LocalTime start, LocalTime end,
                            List<String> people) {
@@ -96,9 +97,11 @@ class SeedDemoCalendar {
                 }
                 var ids = new ArrayList<Long>();
                 var employees = new HashMap<String,Long>();
+                int employeeColorIndex=0;
                 for(var name:List.of("Tony","Tobias","Jesper","Magnus","Anders")) {
                     Long employee=find(connection,"select id from employee where name=?",name);
-                    if(employee==null) employee=insert(connection,"insert into employee(name) values (?)",name);
+                    if(employee==null) employee=insert(connection,"insert into employee(name,color) values (?,?)",name,EMPLOYEE_COLORS.get(employeeColorIndex));
+                    employeeColorIndex++;
                     employees.put(name,employee);
                 }
                 var colors=List.of("#187a58","#326cab","#9e6624","#7451a3","#b34c57","#277f8c");

@@ -18,7 +18,7 @@ public class PlanningService {
     public enum Status { PLANNED, IN_PROGRESS, BLOCKED, DONE, CANCELLED;
         boolean reservesTime() { return this != DONE && this != CANCELLED; }
     }
-    public record Employee(long id, String name, Integer dailyMinutes, Long userId) { }
+    public record Employee(long id, String name, Integer dailyMinutes, Long userId, String color) { }
     public record Project(long id, String name, String color, String accessLevel, boolean canMoveOwn) { }
     public record Settings(int dailyMinutes, String workStart, String breakStart, int breakMinutes) { }
     public record DailyAllocation(long employeeId, LocalDate date, int minutes, LocalTime startTime, LocalTime endTime) { }
@@ -39,7 +39,8 @@ public class PlanningService {
             this(name,description,calendarId,start,end,status,employeeIds,null,null,version,allowConflict);
         }
     }
-    public record EmployeeInput(@NotBlank @Size(max=120) String name, @Min(30) @Max(1440) Integer dailyMinutes) { }
+    public record EmployeeInput(@NotBlank @Size(max=120) String name, @Min(30) @Max(1440) Integer dailyMinutes,
+                                @Pattern(regexp="#[0-9a-fA-F]{6}") String color) { }
     public record SettingsInput(@Min(30) @Max(1440) int dailyMinutes, @NotBlank String workStart,
                                 @NotBlank String breakStart, @Min(0) @Max(180) int breakMinutes) { }
     public record ProjectInput(@NotBlank @Size(max=120) String name, @Pattern(regexp="#[0-9a-fA-F]{6}") String color) { }
@@ -53,6 +54,9 @@ public class PlanningService {
     private final JdbcTemplate db;
     private final Clock clock;
     private final Accounts accounts;
+    private static final List<String> EMPLOYEE_COLORS = List.of(
+            "#2563EB", "#0F766E", "#7C3AED", "#B45309", "#BE123C",
+            "#15803D", "#0369A1", "#A21CAF", "#4D7C0F", "#C2410C");
     public PlanningService(JdbcTemplate db, Clock clock, Accounts accounts) { this.db=db; this.clock=clock; this.accounts=accounts; }
 
     @Transactional(readOnly=true)
@@ -66,8 +70,8 @@ public class PlanningService {
         return new Snapshot(people,calendars,tasks,people.stream().map(person->capacity(person,prefs,tasks,start,end)).toList(),prefs,employeeId,isAdmin);
     }
     public List<Employee> employees() {
-        return db.query("select * from employee where active=true order by id",(rs,n)->new Employee(rs.getLong("id"),rs.getString("name"),
-                (Integer)rs.getObject("daily_minutes"),(Long)rs.getObject("user_id")));
+        return db.query("select id,name,daily_minutes,user_id,color from employee where active=true order by id",(rs,n)->new Employee(rs.getLong("id"),rs.getString("name"),
+                (Integer)rs.getObject("daily_minutes"),(Long)rs.getObject("user_id"),rs.getString("color")));
     }
     public List<Project> projects(String actor,boolean isAdmin) {
         if(isAdmin)return db.query("select id,name,color,'LEAD' as access_level,true as can_move_own from calendar order by id",
@@ -215,9 +219,21 @@ public class PlanningService {
         var settings=settings();
         if(input.dailyMinutes()!=null && LocalTime.parse(settings.workStart()).toSecondOfDay()/60+input.dailyMinutes()+settings.breakMinutes()>1440)
             throw bad("Arbetsdagen måste rymmas inom samma dag.");
-        if(id==null) id=insert("insert into employee(name,daily_minutes) values (?,?)",input.name().strip(),input.dailyMinutes());
-        else if(db.update("update employee set name=?,daily_minutes=? where id=?",input.name().strip(),input.dailyMinutes(),id)!=1) throw bad("Personen finns inte.");
+        String color=input.color()==null?null:input.color().toUpperCase(Locale.ROOT);
+        if(id==null) {
+            if(color==null) color=nextEmployeeColor();
+            id=insert("insert into employee(name,daily_minutes,color) values (?,?,?)",input.name().strip(),input.dailyMinutes(),color);
+        } else {
+            if(color==null) color=db.query("select color from employee where id=?",rs->rs.next()?rs.getString(1):null,id);
+            if(color==null || db.update("update employee set name=?,daily_minutes=?,color=? where id=?",input.name().strip(),input.dailyMinutes(),color,id)!=1)
+                throw bad("Personen finns inte.");
+        }
         audit(actor,"EMPLOYEE_SAVED",id); return id;
+    }
+    private String nextEmployeeColor() {
+        var used=new HashSet<>(db.queryForList("select color from employee where active=true",String.class));
+        return EMPLOYEE_COLORS.stream().filter(color->!used.contains(color)).findFirst()
+                .orElse(EMPLOYEE_COLORS.get(used.size()%EMPLOYEE_COLORS.size()));
     }
     @PreAuthorize("@access.admin(authentication)")
     @Transactional
