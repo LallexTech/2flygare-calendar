@@ -8,3 +8,7 @@ Direct pushes and force pushes to `staging` and `main` are blocked. Changes must
 4. Merge that pull request to trigger the production deployment at `https://2flygarecalender.vercel.app`.
 
 The branch policy workflow rejects pull requests into `main` unless their source is `staging`, and rejects pull requests into `staging` from `main`.
+
+## Repository access
+
+The repository is public, but `LallexTech` is the only account with write access. Issues, Discussions, Projects, and the wiki are disabled. GitHub allows forks of public repositories on personal accounts, but the branch policy rejects pull requests whose source repository is a fork. Only a branch pushed to this repository can pass the required check, and only the owner can merge it.
