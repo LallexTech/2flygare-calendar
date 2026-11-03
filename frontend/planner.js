@@ -12,8 +12,7 @@ const date = value => value === undefined ? moment().tz(zone) : moment(value).tz
 const local = value => date(value).format('YYYY-MM-DDTHH:mm');
 const hours = minutes => `${Number((minutes / 60).toFixed(2))} tim`;
 const statuses = { PLANNED:'Planerad', IN_PROGRESS:'Pågår', BLOCKED:'Hindrad', DONE:'Klar', CANCELLED:'Avbokad' };
-let start = date().startOf('day'), days = 1, data, timeline, editing, busy = false, lastDrag = 0;
-let timelineRedrawTimer = 0;
+let start = date().startOf('day'), days = 1, data, timeline, editing, busy = false, lastDrag = 0, timelineWindowKey = '';
 let selectedProjects = new Set(), projectsInitialized = false;
 const touchPlanning = window.matchMedia('(pointer: coarse)');
 let canManage=false,isAdmin=document.body.dataset.isAdmin==='true',currentEmployeeId=0;
@@ -22,11 +21,6 @@ function element(tag, text, className) { const el=document.createElement(tag); i
 function employeeTint(color,opacity=.18) { const match=/^#([0-9a-f]{6})$/i.exec(color||''); if(!match)return `rgba(100,116,139,${opacity})`;const value=parseInt(match[1],16);return `rgba(${value>>16},${(value>>8)&255},${value&255},${opacity})`; }
 function message(text, error=false) { $('planner-message').textContent=text; $('planner-message').hidden=!text; $('planner-message').classList.toggle('error',error); }
 function formError(id,error) { $(id).textContent=error?.message || ''; $(id).hidden=!error; }
-function scheduleTimelineRedraw() {
- if(!timeline)return;
- window.clearTimeout(timelineRedrawTimer);
- timelineRedrawTimer=window.setTimeout(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>timeline?.redraw())),100);
-}
 async function api(path='',method='GET',body) {
  const response=await fetch(`/api/planning${path}`,{method,credentials:'same-origin',headers:{'Accept':'application/json',...(body?{'Content-Type':'application/json'}:{}),[$('csrf-header')?.content || document.querySelector('meta[name="csrf-header"]').content]:document.querySelector('meta[name="csrf-token"]').content},body:body?JSON.stringify(body):undefined});
  if(response.redirected || response.status===401) { location.assign('/login'); throw Error('Logga in igen.'); }
@@ -82,6 +76,11 @@ function hiddenTimes(){
 }
 function renderViews() {
  const people=visiblePeople(),capacity=data.capacity.filter(c=>people.some(e=>e.id===c.employeeId));
+ const periodStart=start.clone().startOf('day');
+ const windowStart=days===1?periodStart.clone().hour(defaultDayStartHour).minute(0):periodStart;
+ const windowEnd=days===1?periodStart.clone().hour(defaultDayEndHour).minute(0):periodStart.clone().add(days,'days');
+ const visibleStart=windowStart.toDate(),visibleEnd=windowEnd.toDate();
+ const nextWindowKey=`${visibleStart.toISOString()}/${visibleEnd.toISOString()}`;
  const total=key=>capacity.reduce((sum,c)=>sum+c[key],0);
  $('capacity-summary').replaceChildren(...[['Kapacitet',hours(total('capacityMinutes'))],['Planerad tid',hours(total('scheduledMinutes'))],['Ledig tid framåt',hours(total('availableMinutes'))],['Avslutat arbete',hours(total('completedMinutes'))]].map(([label,value])=>{const card=element('div',null,'metric');card.append(element('span',label,'metric-label'),element('strong',value,'metric-value'));return card;}));
  const rows=people.map(e=>{const c=data.capacity.find(c=>c.employeeId===e.id);const label=element('div',null,'staff-label');const avatar=element('span',e.name.slice(0,1),'staff-avatar');avatar.style.backgroundColor=employeeTint(e.color);avatar.style.color=e.color;const text=element('div');text.append(element('div',e.name,'staff-name'),element('div',`${hours(c.availableMinutes)} ledigt · ${c.busyNow?'Upptagen nu':'Tillgänglig nu'}`,'staff-load'));label.append(avatar,text);return{id:e.id,content:label};});
@@ -99,31 +98,14 @@ function renderViews() {
  }
  items.clear();items.add(entries);
  if(!timeline) {
-  timeline=new Timeline($('timeline'),items,groups,{locale:'sv',moment:value=>moment(value).tz(zone),stack:true,orientation:'top',height:'auto',minHeight:390,groupHeightMode:'auto',autoResize:true,margin:{item:8,axis:12},zoomMin:3*3600000,zoomMax:42*86400000,showCurrentTime:true,hiddenDates:hiddenTimes(),selectable:true,itemsAlwaysDraggable:false,multiselect:false,editable:!touchPlanning.matches,snap:value=>new Date(Math.round(+value/900000)*900000),onMoving:(item,callback)=>{lastDrag=Date.now();callback(item);},onMove:moveBooking});
-  window.addEventListener('resize',scheduleTimelineRedraw,{passive:true});
-  window.addEventListener('scroll',scheduleTimelineRedraw,{passive:true});
-  $('timeline').addEventListener('touchend',scheduleTimelineRedraw,{capture:true,passive:true});
-  $('timeline').addEventListener('touchcancel',scheduleTimelineRedraw,{capture:true,passive:true});
-  window.visualViewport?.addEventListener('resize',scheduleTimelineRedraw,{passive:true});
-  window.visualViewport?.addEventListener('scroll',scheduleTimelineRedraw,{passive:true});
-  window.addEventListener('pageshow',scheduleTimelineRedraw,{passive:true});
-  document.fonts?.ready.then(scheduleTimelineRedraw);
+  timeline=new Timeline($('timeline'),items,groups,{locale:'sv',moment:value=>moment(value).tz(zone),stack:true,orientation:'top',start:visibleStart,end:visibleEnd,height:rows.length*76+90,minHeight:390,groupHeightMode:'auto',autoResize:true,margin:{item:8,axis:12},zoomMin:3*3600000,zoomMax:42*86400000,showCurrentTime:true,hiddenDates:hiddenTimes(),selectable:true,itemsAlwaysDraggable:false,multiselect:false,editable:!touchPlanning.matches,snap:value=>new Date(Math.round(+value/900000)*900000),onMoving:(item,callback)=>{lastDrag=Date.now();callback(item);},onMove:moveBooking});
+  timelineWindowKey=nextWindowKey;
   timeline.on('doubleClick',event=>{if(busy||Date.now()-lastDrag<500)return;if(event.item){const item=items.get(event.item);if(item.bookingId)openBooking(data.bookings.find(b=>b.id===item.bookingId));else if(canManage)openBooking(null,event.time,event.group);}else if(canManage&&event.time)openBooking(null,event.time,event.group);});
   timeline.on('click',event=>{if(busy||Date.now()-lastDrag<500||!event.item)return;const item=items.get(event.item);if(item?.bookingId)openBooking(data.bookings.find(b=>b.id===item.bookingId));});
+ } else {
+  timeline.setOptions({height:rows.length*76+90,hiddenDates:hiddenTimes(),editable:!touchPlanning.matches});
+  if(timelineWindowKey!==nextWindowKey){timeline.setWindow(visibleStart,visibleEnd,{animation:false});timelineWindowKey=nextWindowKey;}
  }
- timeline.setOptions({height:rows.length*76+90,hiddenDates:hiddenTimes(),editable:!touchPlanning.matches});
-  const periodStart=start.clone().startOf('day');
-  const windowStart=days===1?periodStart.clone().hour(defaultDayStartHour).minute(0):periodStart;
-  const windowEnd=days===1?periodStart.clone().hour(defaultDayEndHour).minute(0):periodStart.clone().add(days,'days');
-  const applyTimelineWindow=()=>timeline.setWindow(windowStart.toDate(),windowEnd.toDate(),{animation:false});
-  applyTimelineWindow();
-  if(days===1){
-   const visibleDate=periodStart.format('YYYY-MM-DD');
-   requestAnimationFrame(()=>{
-    if(days===1&&start.format('YYYY-MM-DD')===visibleDate)applyTimelineWindow();
-   });
-  }
- scheduleTimelineRedraw();
  renderBoard();renderReports();
 }
 async function moveBooking(item,callback) {
