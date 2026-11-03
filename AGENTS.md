@@ -51,7 +51,9 @@ staging -> PR to main -> explicit release approval -> merge -> Vercel Production
 - Push the feature branch and open a PR targeting `staging`. The required GitHub Actions check is named `Validate source branch`.
 - Only merge the feature PR after its required check succeeds and the change is ready for shared Preview.
 - Verify the result at `https://2flygarecalender-pre.vercel.app`. Preview uses the Preview-scoped environment and pre-production Neon branch.
-- Promote by opening a PR from `staging` to `main`. Merging into `main` automatically deploys Production. Do not merge or promote to `main` without the user's explicit release approval.
+- Promote by opening a PR from `staging` to `main`. Once `.github/workflows/promote-staging.yml` has reached `main`, start it from GitHub **Actions → Promote staging to production → Run workflow** while on `main`; it creates or reuses the promotion PR, but never merges it. Review and merge that PR only after the user explicitly approves the release. Merging into `main` automatically deploys Production.
+- The promotion Action uses the short-lived `GITHUB_TOKEN` with `contents: read` and `pull-requests: write`; do not replace it with a personal token. The repository setting allowing Actions to create pull requests is enabled; GitHub groups PR creation and PR approval under this setting, but the promotion workflow itself only creates/reuses a PR and never approves or merges it. If GitHub requires approval for workflows triggered by the bot-created PR, have a repository writer approve the run so `Validate source branch` can execute.
+- GitHub only exposes the manual **Run workflow** button after the workflow exists on the default branch. For the initial installation, create the first `staging`-to-`main` promotion PR manually after Preview verification and explicit release approval. That one-time PR also promotes any other pending `staging` changes; review its full diff before merge.
 - Branch protection on `staging` and `main` requires a PR and `Validate source branch`, applies to admins, and disallows force pushes and branch deletion. Required approval count is zero for the solo-owner workflow.
 - `LallexTech` is currently the only account with write permission. Issues, Discussions, Projects, and the wiki are disabled. Public personal repositories can still be forked; fork PRs are rejected by the branch-policy workflow. A public fork cannot write to or merge into the source repository.
 - GitHub Actions workflow source is `.github/workflows/branch-policy.yml`. It rejects fork PRs, disallows `main` as a source into `staging`, and requires `staging` as the source into `main`.
@@ -60,8 +62,9 @@ staging -> PR to main -> explicit release approval -> merge -> Vercel Production
 ### Current release status (2026-11-03)
 
 - The Vercel Git connection to the new public repo is active; production branch is `main`, and the pre domain follows `staging`.
-- The current `staging` version includes the fork-source check and repository workflow documentation.
-- PR #2 from `staging` to `main` is open and its required source-branch check passed. It is the current promotion gate; do not merge it without explicit release approval. Since its source is the moving `staging` branch, any later commits merged into `staging` will also appear in that PR.
+- PR #2 (the initial `staging` → `main` promotion) was merged. Its production deployment is complete.
+- PR #5 (`feature/planner-default-0600-1800` → `staging`) was merged. The 06:00–18:00 planner default is now on `staging` and is available through the shared Preview deployment.
+- PR #2 is closed; there is no current promotion PR. Check whether `staging` has new commits ahead of `main` before opening or creating another promotion PR.
 - The local workspace should normally be on `staging` before starting feature work. Always inspect `git status` first and preserve any user changes.
 
 ## Code and deployment safety

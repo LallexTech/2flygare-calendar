@@ -6,6 +6,8 @@ import 'vis-timeline/styles/vis-timeline-graph2d.css';
 
 const $ = id => document.getElementById(id);
 const zone = 'Europe/Stockholm';
+const defaultDayStartHour = 6;
+const defaultDayEndHour = 18;
 const date = value => value === undefined ? moment().tz(zone) : moment(value).tz(zone);
 const local = value => date(value).format('YYYY-MM-DDTHH:mm');
 const hours = minutes => `${Number((minutes / 60).toFixed(2))} tim`;
@@ -94,8 +96,17 @@ function renderViews() {
   timeline.on('click',event=>{if(busy||Date.now()-lastDrag<500||!event.item)return;const item=items.get(event.item);if(item?.bookingId)openBooking(data.bookings.find(b=>b.id===item.bookingId));});
  }
  timeline.setOptions({height:rows.length*76+90,hiddenDates:hiddenTimes(),editable:!touchPlanning.matches});
- const windowStart=days===1?start.clone().hour(6):start.clone(),windowEnd=days===1?start.clone().hour(18):start.clone().add(days,'days');
- timeline.setWindow(windowStart.toDate(),windowEnd.toDate(),{animation:false});
+  const periodStart=start.clone().startOf('day');
+  const windowStart=days===1?periodStart.clone().hour(defaultDayStartHour).minute(0):periodStart;
+  const windowEnd=days===1?periodStart.clone().hour(defaultDayEndHour).minute(0):periodStart.clone().add(days,'days');
+  const applyTimelineWindow=()=>timeline.setWindow(windowStart.toDate(),windowEnd.toDate(),{animation:false});
+  applyTimelineWindow();
+  if(days===1){
+   const visibleDate=periodStart.format('YYYY-MM-DD');
+   requestAnimationFrame(()=>{
+    if(days===1&&start.format('YYYY-MM-DD')===visibleDate)applyTimelineWindow();
+   });
+  }
  renderBoard();renderReports();
 }
 async function moveBooking(item,callback) {

@@ -30,7 +30,13 @@ After the PR check succeeds, merge the feature PR into `staging`. Vercel automat
 
 ## Promote to Production
 
-When the release is approved, open a second pull request from `staging` into `main`. The branch policy rejects any other source for `main`. Review its changes and checks, then merge it only after explicit release approval. This triggers Vercel Production with Production-scoped variables and the separate Neon `production` database branch. The production address is `https://2flygarecalender.vercel.app`.
+When the release is approved, create a pull request from `staging` into `main`. The branch policy rejects any other source for `main`. Review its changes and checks, then merge it only after explicit release approval. This triggers Vercel Production with Production-scoped variables and the separate Neon `production` database branch. The production address is `https://2flygarecalender.vercel.app`.
+
+After `.github/workflows/promote-staging.yml` has reached the default `main` branch, you can create that PR from **GitHub → Actions → Promote staging to production → Run workflow**. Run it on `main`. The workflow checks whether `staging` is ahead, creates the `staging` → `main` PR, or links to the existing open PR. It never merges or deploys to Production by itself. Review and merge the PR manually after the Preview release is approved.
+
+The workflow uses GitHub's short-lived `GITHUB_TOKEN` with only read access to repository contents and write access to pull requests; it needs no personal access token or extra secret. The repository setting that permits Actions to create pull requests is enabled. GitHub groups PR creation and PR approval under that setting, but this workflow only creates/reuses a PR and contains no approval or merge operation. GitHub may hold workflows triggered by a PR created with `GITHUB_TOKEN` for approval. If the PR shows **Approve and run workflows**, approve it so the required `Validate source branch` check can run.
+
+There is a one-time bootstrap step: GitHub only offers the **Run workflow** button for a workflow already present on the default branch. Until this workflow is merged into `main`, create the first promotion PR manually from [the `main`/`staging` comparison](https://github.com/LallexTech/2flygare-calendar/compare/main...staging?expand=1). That initial release PR will also contain any changes already waiting on `staging`, so inspect its full diff and merge only after testing Preview and approving the release. After the workflow file reaches `main`, use the Actions button for later releases.
 
 Vercel deploys Git pushes and pull requests automatically; routine releases do not require the Vercel CLI. A merge into `staging` updates Preview. A merge into `main` updates Production. Do not merge a `staging`-to-`main` PR before release approval because it deploys to the public Production domain.
 

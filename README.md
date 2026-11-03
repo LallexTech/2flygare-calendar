@@ -55,7 +55,7 @@ Google treats dots in a personal `@gmail.com` username as insignificant. Sign-in
 
 ## Planning workspace
 
-The primary view is a staff Gantt timeline. Choose a day, week, three weeks, or five weeks; use zoom controls for shorter bookings. On phones the initial range is a week. Project filters dim other projects so colleagues' occupied time remains visible. Staff filters limit the displayed rows. Green backgrounds show future available working time.
+The primary view is a staff Gantt timeline. It opens in a one-day view from 06:00 to 18:00 on both phones and desktops. Use the range menu to switch to a week, three weeks, or five weeks; use zoom controls for shorter bookings. Project filters dim other projects so colleagues' occupied time remains visible. Staff filters limit the displayed rows. Green backgrounds show future available working time.
 
 Administrators can create bookings with **Ny bokning** or double-click an empty timeline position. Click a booking to open its details. Drag the booking to move its time or transfer one assigned colleague to another row; changing time affects the whole assigned team. Drag either edge to resize. Moves snap to 30 minutes; the server rejects bookings shorter than 30 minutes. Overlapping active assignments require explicit double-booking confirmation. Version checks prevent a stale browser edit from overwriting a colleague's saved edit.
 
