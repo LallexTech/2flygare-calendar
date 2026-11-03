@@ -102,8 +102,8 @@ function renderViews() {
   timeline=new Timeline($('timeline'),items,groups,{locale:'sv',moment:value=>moment(value).tz(zone),stack:true,orientation:'top',height:'auto',minHeight:390,groupHeightMode:'auto',autoResize:true,margin:{item:8,axis:12},zoomMin:3*3600000,zoomMax:42*86400000,showCurrentTime:true,hiddenDates:hiddenTimes(),selectable:true,itemsAlwaysDraggable:false,multiselect:false,editable:!touchPlanning.matches,snap:value=>new Date(Math.round(+value/900000)*900000),onMoving:(item,callback)=>{lastDrag=Date.now();callback(item);},onMove:moveBooking});
   window.addEventListener('resize',scheduleTimelineRedraw,{passive:true});
   window.addEventListener('scroll',scheduleTimelineRedraw,{passive:true});
-  $('timeline').addEventListener('touchend',scheduleTimelineRedraw,{passive:true});
-  $('timeline').addEventListener('touchcancel',scheduleTimelineRedraw,{passive:true});
+  $('timeline').addEventListener('touchend',scheduleTimelineRedraw,{capture:true,passive:true});
+  $('timeline').addEventListener('touchcancel',scheduleTimelineRedraw,{capture:true,passive:true});
   window.visualViewport?.addEventListener('resize',scheduleTimelineRedraw,{passive:true});
   window.visualViewport?.addEventListener('scroll',scheduleTimelineRedraw,{passive:true});
   window.addEventListener('pageshow',scheduleTimelineRedraw,{passive:true});
