@@ -24,7 +24,14 @@ jobs:
         env:
           BASE_REF: ${{ github.base_ref }}
           HEAD_REF: ${{ github.head_ref }}
+          BASE_REPO: ${{ github.repository }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
+          if [[ "$HEAD_REPO" != "$BASE_REPO" ]]; then
+            echo "::error::Pull requests must come from a branch in this repository. Fork pull requests are not accepted."
+            exit 1
+          fi
+
           if [[ "$BASE_REF" == "main" && "$HEAD_REF" != "staging" ]]; then
             echo "::error::Pull requests into main must come from staging."
             exit 1
