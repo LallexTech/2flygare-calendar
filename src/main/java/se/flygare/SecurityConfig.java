@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login/link", "/login/confirm", "/login/consume").access((authentication, context) -> new AuthorizationDecision(legacy))
                         .requestMatchers("/login", "/oauth2/**", "/login/oauth2/**", "/error", "/style.css",
-                                "/manifest.webmanifest", "/favicon.ico", "/icons/**", "/planner/**", "/install.js", "/planner.css").permitAll()
+                                "/manifest.webmanifest", "/favicon.ico", "/icons/**", "/planner/**", "/install.js", "/planner.css", "/environment.css").permitAll()
                         .requestMatchers("/admin", "/admin/**").access((authentication, context) ->
                                 new AuthorizationDecision(access.admin(authentication.get())))
                         .requestMatchers("/app", "/app/**", "/api/planning", "/api/planning/**").access((authentication, context) ->
