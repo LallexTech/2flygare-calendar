@@ -111,10 +111,10 @@ public class AdminController {
         return "redirect:/admin#project-access";
     }
 
-    public record ProjectAccessForm(@NotNull Long userId,@NotNull Long calendarId,@NotBlank String level,boolean canMoveOwn) { }
+    public record ProjectAccessForm(@NotNull Long userId,@NotNull Long calendarId,@NotBlank String level,Boolean canMoveOwn) { }
     @PostMapping("/project-access")
     String projectAccess(Authentication authentication,@Valid @ModelAttribute ProjectAccessForm form) {
-        administration.saveProjectAccess(authentication.getName(),form.userId(),form.calendarId(),form.level(),form.canMoveOwn());
+        administration.saveProjectAccess(authentication.getName(),form.userId(),form.calendarId(),form.level(),Boolean.TRUE.equals(form.canMoveOwn()));
         return "redirect:/admin#project-access";
     }
 
